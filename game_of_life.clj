@@ -1,11 +1,7 @@
-(ns game-of-life)
+(ns game-of-life
+  (:require [clojure.test :refer [deftest is testing]]))
 
-(def grid
-  [[0 0 1]
-   [0 1 1]
-   [0 1 1]])
-
-(def mods
+(def neighbors-directions
   [[0  1]
    [0 -1]
    [1  0]
@@ -15,18 +11,31 @@
    [1 -1]
    [-1 -1]])
 
-(defn alive?
-  [position grid]
-  (= 1 (get-in grid position)))
-
 (defn neighbors
   [[row col] grid]
-  (->> mods
+  (->> neighbors-directions
        (map (fn [[row-mod col-mod]]
               (get-in grid [(+ row row-mod) (+ col col-mod)])))
        (remove #(or (nil? %)
                     (zero? %)))
        count))
+
+(deftest test-neighbors-detection
+  (testing "find one neighbor"
+    (is (= 1 (neighbors [0 2]
+                        [[0 0 1]
+                         [0 0 1]
+                         [0 0 0]]))))
+  (testing "find many neighbors"
+    (is (= 4 (neighbors [1 1]
+                        [[0 1 1]
+                         [0 1 1]
+                         [0 1 0]]))))
+  (testing "find no neighbors"
+    (is (= 0 (neighbors [0 0]
+                        [[0 0 1]
+                         [0 0 1]
+                         [0 0 0]])))))
 
 (defn underpopulated?
   [n]
@@ -73,14 +82,19 @@
     (for [col (range (count (get grid row)))]
       (transform-cell [row col] grid))))
 
-(defn print
+(defn print-grid
   [grid]
   (for [row grid]
     (println row)))
+
+(def grid
+  [[0 0 1]
+   [0 1 1]
+   [0 1 1]])
 
 (comment
 
  (-> grid
      step
-     print)
+     print-grid)
  )
